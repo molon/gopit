@@ -1,13 +1,10 @@
 # gopit
-golang坑的一些测试和记录
+golang坑的一些记录和测试
 
 ```
 大坑集锦
 
 下面出现的S都表示为一个结构体类型
-
----
-vscode的debug配置里要加上env:{}它才能找到GOPATH
 
 ---
 var a *string --> nil
@@ -55,7 +52,7 @@ b := a
 ---
 a := map[int]S{}
 a[0] = S{"str"}
-a[0].xxx = "str2"
+a[0].xxx = "str2" 
 //上面这样不行，因为定义的map value不是指针，不能直接操作，很奇葩，原因暂时不知道
 //value改为指针即可
 
@@ -139,33 +136,13 @@ func TestCollectIntCombines(t *testing.T) {
 }
 
 -------------
-func TestFormat(t *testing.T) {
-	var a uint64 = 250
-	fmt.Printf("%#v\n", a/100.0)
-	fmt.Printf("%.2f\n", a/100.0)
-	fmt.Printf("%#v\n", float64(a)/100)
-	fmt.Printf("%.2f\n", float64(a)/100)
-}
-输出
-0x2
-%!f(uint64=02)
-2.5
-2.50
-所以不像其他语言，a/100.0的方式结果基本只会是a的类型。
-测试
-	var a uint64 = 250
-	var b float64 = 750.0
-	fmt.Printf("%#v\n", b/a) //发现不一样的类型，压根不能做运算，很搞笑
-	fmt.Printf("%.2f\n", b/a)
-
--------------
-go vendor机制在多个GOPATH的环境下偶尔不好用，已知是1.8出问题，其他版本不确定
-
--------------
-ok:=true
-if xxx {
-	str,ok:=ttt.(string)
-//这里的ok就和上面的ok没关系了
-//但是如果没有if 这块呢？需要测试下
-}
 ```
+
+####只能文字记录的一些
+- `vendor`文件夹在`go1.8`版本的多`GOPATH`环境下可能会被忽略，最终被使用的还是外部库。
+- `vscode`的`debug`配置里要加上`env:{}`后，它才能找到`GOPATH`
+
+####for_test.go 概览
+- `TestFormat` 整型浮点数运算和`Format`
+- `TestStmt` 作用域与`:=`
+- `TestRecover` `recover`的作用域

@@ -27,7 +27,7 @@ func TestFormat(t *testing.T) {
 	//fmt.Printf("%.2f\n", b/a)
 }
 
-func do(o int) (int, error) {
+func doForTestStmt(o int) (int, error) {
 	return o, nil
 }
 
@@ -35,14 +35,14 @@ func TestStmt(t *testing.T) {
 	r := 1
 
 	fmt.Printf("1-- %#v,%p\n", r, &r)
-	r, err := do(2) //虽说:=了，但是不是一个新的r
+	r, err := doForTestStmt(2) //虽说:=了，但是不是一个新的r
 	if err != nil {
 		t.Fatal(err)
 	}
 	fmt.Printf("2-- %#v,%p\n", r, &r)
 	if true {
-		r, err = do(5)   //这个修改的是上面的
-		r, err2 := do(7) //这个不像上面那个:=，这里会局部初始化一个新的同步的r变量
+		r, err = doForTestStmt(5)   //这个修改的是上面的
+		r, err2 := doForTestStmt(7) //这个不像上面那个:=，这里会局部初始化一个新的同步的r变量
 		if err2 != nil {
 			t.Fatal(err2)
 		}
@@ -59,4 +59,32 @@ func TestStmt(t *testing.T) {
 		结论就是
 		因为多返回值而必须使用:=的情况下，若是同级语句块的话，则不是新的变量生成，否则就是新变量生成
 	*/
+}
+
+func doForTestRecover1() {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered doForTestRecover1: ", r)
+		}
+	}()
+	panic(fmt.Errorf("Panic doForTestRecover1"))
+}
+
+func justDoRecover() {
+	if r := recover(); r != nil {
+		fmt.Println("Recovered justDoRecover: ", r)
+	}
+	fmt.Println("End justDoRecover")
+}
+
+func doForTestRecover2() {
+	defer func() {
+		justDoRecover() //注意，这个方法里面的recover即使执行了，也不会捕获下面的panic，所以recover只能捕获同级的或者子级的panic
+	}()
+	panic(fmt.Errorf("Panic doForTestRecover2"))
+}
+
+func TestRecover(t *testing.T) {
+	doForTestRecover1()
+	doForTestRecover2()
 }
