@@ -7,7 +7,7 @@ golang坑的一些记录和测试
 
 #### for_test.go 概览
 - `TestFormat` 整型浮点数运算和`Format`
-- `TestStmt` 作用域与`:=`
+- `TestStmt` `:=`在不同作用域下的行为
 - `TestRecover` `recover`的作用域
 
 #### 其他未整理
