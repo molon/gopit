@@ -1,16 +1,16 @@
 # gopit
 golang坑的一些记录和测试
 
-###只能文字记录的一些
+#### 只能文字记录的一些
 - `vendor`文件夹在`go1.8`版本的多`GOPATH`环境下可能会被忽略，最终被使用的还是外部库。
 - `vscode`的`debug`配置里要加上`env:{}`后，它才能找到`GOPATH`
 
-###for_test.go 概览
+#### for_test.go 概览
 - `TestFormat` 整型浮点数运算和`Format`
 - `TestStmt` 作用域与`:=`
 - `TestRecover` `recover`的作用域
 
-###其他未整理
+#### 其他未整理
 ```
 大坑集锦
 
