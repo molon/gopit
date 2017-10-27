@@ -3,13 +3,16 @@ golang坑的一些记录和测试
 
 #### 只能文字记录的一些
 - `vendor`文件夹在`go1.8`版本的多`GOPATH`环境下可能会被忽略，最终被使用的还是外部库。
+- 如果使用`vendor`文件夹，请尽量保证不会引用文件夹以外的库，也不要让他们来引用，否则容易产生各种各样的问题。最明显的例子就是`若双方引用了同名的其他pkg，因为上述使用不当最终编译器会认为类型错误，而且也遇到过不提示编译成功，这更可怕，查错很难(那次导致了两个全局变量被生成，pkg1写的是这个，pkg2读的却是那个)。`
 - `vscode`的`debug`配置里要加上`env:{}`后，它才能找到`GOPATH`
-- `gorm`的`Count`方法会转成`COUNT(*)`，所以如果`join`了两张表有相同名称字段会出错。而手动指定`Select("COUNT(1) AS cnt")`语句的话，`COUNT(1) AS`部分会被忽略
+- `gorm`的`Count`方法会转成`COUNT(*)`，所以如果`Join`了两张表有相同名称字段的话，`sql`会提示命名模糊的错误。而手动指定`Select("COUNT(1) AS cnt")`语句的话，`COUNT(1) AS`部分会被忽略
+
 #### for_test.go 概览
-- `TestFormat` 整型浮点数运算和`Format`
+- `TestDivision` 整型浮点数运算
 - `TestStmt` `:=`在不同作用域下的行为
 - `TestRecover` `recover`的作用域
 - `TestMap` `map`里`nil`元素相关
+- `TestFmt` `fmt`相关
 
 #### 其他未整理
 ```

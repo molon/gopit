@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestFormat(t *testing.T) {
+func TestDivision(t *testing.T) {
 	var a uint64 = 250
 
 	/*
@@ -112,4 +112,9 @@ func TestMap(t *testing.T) {
 	}
 	delete(m, "2")
 	fmt.Println(m)
+}
+
+func TestFmt(t *testing.T) {
+	//中间默认就会产生空格
+	fmt.Println("1", "2")
 }
