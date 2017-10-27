@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"path/filepath"
 	"testing"
 )
 
@@ -87,4 +88,28 @@ func doForTestRecover2() {
 func TestRecover(t *testing.T) {
 	doForTestRecover1()
 	doForTestRecover2()
+}
+
+//just test 不是坑
+func TestFilePathGlob(t *testing.T) {
+	m, err := filepath.Glob("./*.go")
+	if err != nil {
+		t.Fatal(m)
+	}
+	fmt.Println(m)
+}
+
+//Map相关
+func TestMap(t *testing.T) {
+	m := make(map[string]interface{})
+	m["1"] = "haha1"
+	m["2"] = "haha2"
+	fmt.Println(m)
+	m["1"] = nil
+	fmt.Println(m)
+	if s, ok := m["1"]; ok {
+		fmt.Println("1 exists: ", s)
+	}
+	delete(m, "2")
+	fmt.Println(m)
 }
