@@ -6,6 +6,10 @@ import (
 	"testing"
 )
 
+type Sample struct {
+	Name string
+}
+
 func TestDivision(t *testing.T) {
 	var a uint64 = 250
 
@@ -62,13 +66,21 @@ func TestStmt(t *testing.T) {
 	*/
 }
 
-func doForTestRecover1() {
+func doForTestRecover1() *Sample {
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println("Recovered doForTestRecover1: ", r)
 		}
 	}()
+
+	//这里的panic会被捕获，然后此函数的返回值会是nil，基本可以认为单纯var x xxtype的值
 	panic(fmt.Errorf("Panic doForTestRecover1"))
+
+	fmt.Println("will return doForTestRecover1")
+	var s = &Sample{
+		Name: "hello",
+	}
+	return s
 }
 
 func justDoRecover() {
@@ -80,13 +92,16 @@ func justDoRecover() {
 
 func doForTestRecover2() {
 	defer func() {
-		justDoRecover() //注意，这个方法里面的recover即使执行了，也不会捕获下面的panic，所以recover只能捕获同级的或者子级的panic
+		//注意即使panic了，defer的内容也一定会执行的
+		//注意，这个方法里面的recover即使执行了，也不会捕获下面的panic
+		//所以recover只能捕获同级的或者子级的panic
+		justDoRecover()
 	}()
 	panic(fmt.Errorf("Panic doForTestRecover2"))
 }
 
 func TestRecover(t *testing.T) {
-	doForTestRecover1()
+	fmt.Println(doForTestRecover1())
 	doForTestRecover2()
 }
 
@@ -97,6 +112,10 @@ func TestFilePathGlob(t *testing.T) {
 		t.Fatal(m)
 	}
 	fmt.Println(m)
+}
+
+func editMap(m map[string]interface{}) {
+	m["edit"] = "123"
 }
 
 //Map相关
@@ -112,9 +131,53 @@ func TestMap(t *testing.T) {
 	}
 	delete(m, "2")
 	fmt.Println(m)
+	//上述结论是 map 里是可存储nil的，删除必须使用delete
+
+	editMap(m)
+	fmt.Println(m)
+
+	val, ok := m["edit"].(string)
+	if ok {
+		fmt.Println("exists and is string:", val)
+	} else {
+		fmt.Println("not exists or not string")
+	}
 }
 
 func TestFmt(t *testing.T) {
 	//中间默认就会产生空格
 	fmt.Println("1", "2")
+}
+
+func inc(a *int, delta int) int {
+	*a = *a + delta
+	return *a
+}
+
+func doDefer() int {
+	i := 1
+	defer func(a int) {
+		i = i + a
+		fmt.Println("inside:", i)
+	}(inc(&i, 1)) //作为参数的inc(&i, 1)已经提前执行了，所以这句后i已经变为2了
+
+	return inc(&i, 5) //此句执行后结果为7，defer里的打印出来是 inside:9
+	return i + 5      //此句执行后结果为7，defer里的打印出来是 inside:4
+
+	//上面两句，前者是在return这句执行后对i进行了修改，后者没有。
+	//根据结果可以判断出，return后的语句会比defer里的玩意先执行。
+}
+
+func TestDefer(*testing.T) {
+	fmt.Println(doDefer())
+}
+
+func TestSet(*testing.T) {
+	a := Sample{Name: "molon"}
+	b := a
+	c := b
+	fmt.Printf("a:%p\n", &a)
+	fmt.Printf("b:%p\n", &b)
+	fmt.Printf("c:%p\n", &c)
+	//上述打印出来的结果不一样，说明只要赋值非指针就是copy
 }

@@ -21,7 +21,7 @@ func hello() {
 
 	fmt.Printf("[%s:%d] Func name %s\n", file, line, funcNmae)
 
-	pc, file, line, ok = runtime.Caller(1)
+	pc, file, line, ok = runtime.Caller(100)
 	if !ok {
 		return
 	}
