@@ -66,21 +66,26 @@ func TestStmt(t *testing.T) {
 	*/
 }
 
-func doForTestRecover1() *Sample {
+func doForTestRecover1() (sp *Sample, err error) {
+	var s *Sample
 	defer func() {
 		if r := recover(); r != nil {
 			fmt.Println("Recovered doForTestRecover1: ", r)
 		}
+		s = &Sample{ //这时候的s再设置也没屌用，下面的return s, nil又不会执行到
+			Name: "hello2",
+		}
+		err = fmt.Errorf("panic err in defer") //这时候设置的err还是会认的，因为返回参数设置了同名
 	}()
 
 	//这里的panic会被捕获，然后此函数的返回值会是nil，基本可以认为单纯var x xxtype的值
 	panic(fmt.Errorf("Panic doForTestRecover1"))
 
 	fmt.Println("will return doForTestRecover1")
-	var s = &Sample{
+	s = &Sample{
 		Name: "hello",
 	}
-	return s
+	return s, nil
 }
 
 func justDoRecover() {
@@ -91,10 +96,17 @@ func justDoRecover() {
 }
 
 func doForTestRecover2() {
+	f := func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered f: ", r)
+		}
+		fmt.Println("End f")
+	}
 	defer func() {
-		//注意即使panic了，defer的内容也一定会执行的
+		//注意这俩里面即使panic了，defer的内容也一定会执行的
 		//注意，这个方法里面的recover即使执行了，也不会捕获下面的panic
 		//所以recover只能捕获同级的或者子级的panic
+		f()
 		justDoRecover()
 	}()
 	panic(fmt.Errorf("Panic doForTestRecover2"))
@@ -169,7 +181,7 @@ func doDefer() int {
 }
 
 func TestDefer(*testing.T) {
-	fmt.Println(doDefer())
+	fmt.Println("doDefer:", doDefer())
 }
 
 func TestSet(*testing.T) {
@@ -180,4 +192,14 @@ func TestSet(*testing.T) {
 	fmt.Printf("b:%p\n", &b)
 	fmt.Printf("c:%p\n", &c)
 	//上述打印出来的结果不一样，说明只要赋值非指针就是copy
+}
+
+func TestSlice(*testing.T) {
+	a := []string{"a", "b", "c", "d", "e"}
+
+	fmt.Println(a[0])
+	//fmt.Println(a[3]) //越界了会panic
+	fmt.Println(a[0:2])
+	fmt.Println(a[0:5]) //注意5虽然看起来越界了，但是因为最终不会拿取这个位置，所以没事
+	//fmt.Println(a[0:6])
 }
