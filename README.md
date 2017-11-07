@@ -18,6 +18,7 @@ golang坑的一些记录和测试
 - `TestSlice` 测试越界问题
 - `TestIsSliceOrArrayWithKind` 通过反射判断是否是某类型的数组或者slice
 - `TestTime` `time`时区相关
+- `TestTransferNilInterface` 使用接口类型作为参数和返回值传递nil的判断
 
 #### 其他未整理
 ```

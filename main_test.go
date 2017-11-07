@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"path/filepath"
 	"reflect"
 	"runtime"
@@ -11,6 +12,10 @@ import (
 
 type Sample struct {
 	Name string
+}
+
+func (*Sample) Close() error {
+	return nil
 }
 
 func TestDivision(t *testing.T) {
@@ -256,4 +261,26 @@ func TestTime(*testing.T) {
 
 	//综上所述
 	//在我们一定要基于当前时区转换的情况下，为了保险起见，请Format之前一定要加Local()，Parse时候一定要用ParseInLocation(...time.Local)
+}
+
+func doTransferInterface(e io.Closer) interface{} {
+	if e == nil {
+		fmt.Println("e is nil")
+	} else {
+		fmt.Println("e is not nil")
+	}
+	var s *Sample
+	return s
+}
+
+//测试接口作为参数和返回值nil最终判断
+func TestTransferNilInterface(*testing.T) {
+	// var x *Sample
+	// a := doTransferInterface(x) //上面两行的话输出e is not nil
+	a := doTransferInterface(nil) //这行的话输出e is nil
+	if a == nil {
+		fmt.Println("a is nil")
+	} else {
+		fmt.Println("a is not nil")
+	}
 }
