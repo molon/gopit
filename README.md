@@ -7,12 +7,17 @@ golang坑的一些记录和测试
 - `vscode`的`debug`配置里要加上`env:{}`后，它才能找到`GOPATH`
 - `gorm`的`Count`方法会转成`COUNT(*)`，所以如果`Join`了两张表有相同名称字段的话，`sql`会提示命名模糊的错误。而手动指定`Select("COUNT(1) AS cnt")`语句的话，`COUNT(1) AS`部分会被忽略
 
-#### for_test.go 概览
+#### main_test.go 概览
 - `TestDivision` 整型浮点数运算
 - `TestStmt` `:=`在不同作用域下的行为
 - `TestRecover` `recover`的作用域
 - `TestMap` `map`里`nil`元素相关
 - `TestFmt` `fmt`相关
+- `TestDefer` 测试`defer`的作用域和执行顺序啥的
+- `TestSet` 测试赋值语句相关
+- `TestSlice` 测试越界问题
+- `TestIsSliceOrArrayWithKind` 通过反射判断是否是某类型的数组或者slice
+- `TestTime` `time`时区相关
 
 #### 其他未整理
 ```

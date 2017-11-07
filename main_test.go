@@ -3,7 +3,10 @@ package main
 import (
 	"fmt"
 	"path/filepath"
+	"reflect"
+	"runtime"
 	"testing"
+	"time"
 )
 
 type Sample struct {
@@ -202,4 +205,55 @@ func TestSlice(*testing.T) {
 	fmt.Println(a[0:2])
 	fmt.Println(a[0:5]) //注意5虽然看起来越界了，但是因为最终不会拿取这个位置，所以没事
 	//fmt.Println(a[0:6])
+}
+
+func isSliceOrArrayWithKind(args interface{}, kind reflect.Kind) (b bool) {
+	defer func() {
+		if r := recover(); r != nil {
+			if _, ok := r.(runtime.Error); ok {
+				panic(r)
+			} else if s, ok := r.(string); ok {
+				panic(s)
+			} else {
+				b = false
+			}
+		}
+	}()
+
+	t := reflect.TypeOf(args)
+	if t.Kind() != reflect.Slice && t.Kind() != reflect.Array {
+		return false
+	}
+	return t.Elem().Kind() == kind
+}
+
+func TestIsSliceOrArrayWithKind(t *testing.T) {
+	a := []string{"h", "e"}
+	if !isSliceOrArrayWithKind(a, reflect.String) {
+		t.Fatal("is not")
+	}
+
+	//上面的很傻比，语法本身就支持，开始没想到
+	var b interface{} = a
+	if _, ok := b.([]string); ok {
+		fmt.Println("is string array")
+	}
+}
+
+func TestTime(*testing.T) {
+	t := time.Now() //这个里面默认给到的是当前时区
+	label := "2006-01-02 15:04:05"
+	ts := t.Local().Format(label) //这里即使不给Local()，出来的也是当前时区的format，因为Now()里面已经设置了时区
+
+	// t2, _ := time.Parse(label, ts) //这里如果不使用ParseInLocation，转出来的是UTC时区
+	//ts2 := t2.Format(label) //这里的结果长得是和上面的ts一样，那也只是在UTC时区的长的一样的时间，t和t2完全不是一码事
+
+	//只有这样才能Parse到目的时区，最终即使不给Local()，出来的也是相同的时间
+	t2, _ := time.ParseInLocation(label, ts, time.Local)
+	ts2 := t2.Local().Format(label)
+
+	fmt.Println(ts, ts2)
+
+	//综上所述
+	//在我们一定要基于当前时区转换的情况下，为了保险起见，请Format之前一定要加Local()，Parse时候一定要用ParseInLocation(...time.Local)
 }
