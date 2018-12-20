@@ -363,3 +363,27 @@ func TestCollectIntCombines(t *testing.T) {
 	t.Log(combines)
 	t.Log("一共", len(combines), "个结果")
 }
+
+type ShopORM struct {
+	AccountID       string
+	AddressCity     string
+	AddressProvince string
+}
+
+func (s ShopORM) TableName() string {
+	s.AccountID = "100"
+	return "card_shops"
+}
+
+func (s *ShopORM) TableName2() string {
+	s.AccountID = "200"
+	return "card_shops2"
+}
+
+func TestValuePointerMethod(t *testing.T) {
+	s := ShopORM{}
+	fmt.Println(s.TableName())
+	fmt.Println(s.AccountID)
+	fmt.Println(s.TableName2())
+	fmt.Println(s.AccountID)
+}
