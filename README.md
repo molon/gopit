@@ -81,8 +81,9 @@ a:= []S{........}
 for index,e := range a {
 	//这里的e是开辟了一份内存空间，例如0x4a4a4c这块
 	//然后每次循环都是从a的对应index哪里copy进来到这块内存
-//所以切记，存储e的指针地址一般毫无意义，因为其内容在下次循环必定会被改变，必须存储的话，请自行copy一份
+//所以切记，对e进行&取地址然后存储其地址毫无意义，因为其内容在下次循环必定会被改变，必须存储的话，请自行copy一份
 //例如ee:=e都可
+// 如果a是指针元素的数组，则一般无忧，因为一般不会对指针元素再去取地址
 }
 
 ---
@@ -91,23 +92,18 @@ func collectIntCombines(groups *[][]int, gIndex int, combine []int, combines *[]
 	if gIndex < 0 || gIndex >= len(*groups) {
 		return
 	}
-	for index, op := range (*groups)[gIndex] {
-		if gIndex == len(*groups)-1 && index == len((*groups)[gIndex])-1 {
-			fmt.Printf("%p,%v\n", &(*combines)[0], (*combines)[0])
-		}
+	for _, op := range (*groups)[gIndex] {
 		cb := append(combine, op)
-		if gIndex == len(*groups)-1 && index == len((*groups)[gIndex])-1 {
-			fmt.Printf("%p,%v\n", &(*combines)[0], (*combines)[0])
-		}
 		/*
 				根据下面这句的输出可以发现
-				0xc420354340,0x1d8f318,[1],[]
-				0xc420354350,0xc420354340,[1 11],[1]
-				0xc4202142c0,0xc420354350,[1 11 21],[1 11]
-				0xc4202142c0,0xc4202142c0,[1 11 21 31],[1 11 21]
-				0xc4202143e0,[1 11 21 31]
-				0xc4202143e0,[1 11 21 32]
-				0xc4202142c0,0xc4202142c0,[1 11 21 32],[1 11 21]
+				1->0xc000082240,0x124fbc8,[1],[]
+				1->0xc000082250,0xc000082240,[1 11],[1]
+				1->0xc0000bc0c0,0xc000082250,[1 11 21],[1 11]
+				1->0xc0000bc0c0,0xc0000bc0c0,[1 11 21 31],[1 11 21]
+				2->collect:0xc0000bc0c0,[1 11 21 31]
+				1->0xc0000bc0c0,0xc0000bc0c0,[1 11 21 32],[1 11 21]
+				2->collect:0xc0000bc0c0,[1 11 21 32]
+				final resu.t:[[1 11 21 32] [1 11 21 32]] // 注意结果却是两个重复的数据
 				注意第四句，打印出来的地址一样，但是内容不一样。
 				这说明一个问题，俩数组存储内容的区域用的一块地，但是数组对象基本信息用的地不是一个地
 				cb的基本信息认为有4个元素，combine认为有3个，这样以来，修改了两者公用的那块区域都会影响到另外一方。
@@ -116,8 +112,9 @@ func collectIntCombines(groups *[][]int, gIndex int, combine []int, combines *[]
 			解释：因为原数组的cap还够用就不会开辟新内存，https://stackoverflow.com/a/28143457，需要开辟新内存的时机也讲究
 			2,4,8,16,32如此类推，所以上面第三层出现这情况了
 		*/
-		fmt.Printf("%p,%p,%v,%v\n", cb, combine, cb, combine)
+		fmt.Printf("1->%p,%p,%v,%v\n", cb, combine, cb, combine)
 		if gIndex == len(*groups)-1 { //如果是最后一个数组，则可以完成一个组合且收集到combines里
+			fmt.Printf("2->collect:%p,%v\n", cb, cb)
 			//cp := make([]int, len(cb))
 			//copy(cp, cb) //必须copy一份，否则之后的循环可能会影响已记录部分
 			//*combines = append(*combines, cp)
@@ -143,9 +140,6 @@ func TestCollectIntCombines(t *testing.T) {
 		{
 			31, 32,
 		},
-		//{
-		//	41, 42,
-		//},
 	}
 
 	combines := [][]int{}

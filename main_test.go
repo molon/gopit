@@ -30,7 +30,7 @@ func TestDivision(t *testing.T) {
 		这说明，前两者的运算的结果类型最终都是依着a的类型来，100.0并未像其他语言一样变成浮点数运算
 	*/
 	fmt.Printf("%#v\n", 100.0/a)
-	fmt.Printf("%.2f\n", 100.0/a)
+	fmt.Printf("%d\n", 100.0/a)
 	fmt.Printf("%#v\n", float64(a)/100)
 	fmt.Printf("%.2f\n", float64(a)/100)
 
@@ -71,6 +71,7 @@ func TestStmt(t *testing.T) {
 		4-- 5,0xc420016f88
 		结论就是
 		因为多返回值而必须使用:=的情况下，若是同级语句块的话，则不是新的变量生成，否则就是新变量生成
+		上述描述不准确，主要还是得看初始化时候的层级
 	*/
 }
 
@@ -93,6 +94,7 @@ func doForTestRecover1() (sp *Sample, err error) {
 	s = &Sample{
 		Name: "hello",
 	}
+
 	return s, nil
 }
 
@@ -151,7 +153,6 @@ func TestMap(t *testing.T) {
 	}
 	delete(m, "2")
 	fmt.Println(m)
-	//上述结论是 map 里是可存储nil的，删除必须使用delete
 
 	editMap(m)
 	fmt.Println(m)
@@ -283,4 +284,82 @@ func TestTransferNilInterface(*testing.T) {
 	} else {
 		fmt.Println("a is not nil")
 	}
+}
+
+func TestContinue(*testing.T) {
+	path := []string{"a", "b", "c", "d"}
+	fType := "c"
+
+fields:
+	for i := 0; i < 10; i++ {
+		fmt.Println(i)
+		for j, e := range path {
+			fmt.Println("   ", j, " ", e)
+			if fType == e {
+				fmt.Println("continue fields")
+				continue fields
+			}
+		}
+	}
+}
+
+func collectIntCombines(groups *[][]int, gIndex int, combine []int, combines *[][]int) {
+	if gIndex < 0 || gIndex >= len(*groups) {
+		return
+	}
+	for _, op := range (*groups)[gIndex] {
+		cb := append(combine, op)
+		/*
+				根据下面这句的输出可以发现
+				1->0xc000082240,0x124fbc8,[1],[]
+				1->0xc000082250,0xc000082240,[1 11],[1]
+				1->0xc0000bc0c0,0xc000082250,[1 11 21],[1 11]
+				1->0xc0000bc0c0,0xc0000bc0c0,[1 11 21 31],[1 11 21]
+				2->collect:0xc0000bc0c0,[1 11 21 31]
+				1->0xc0000bc0c0,0xc0000bc0c0,[1 11 21 32],[1 11 21]
+				2->collect:0xc0000bc0c0,[1 11 21 32]
+				final resu.t:[[1 11 21 32] [1 11 21 32]] // 注意结果却是两个重复的数据
+				注意第四句，打印出来的地址一样，但是内容不一样。
+				这说明一个问题，俩数组存储内容的区域用的一块地，但是数组对象基本信息用的地不是一个地
+				cb的基本信息认为有4个元素，combine认为有3个，这样以来，修改了两者公用的那块区域都会影响到另外一方。
+
+			最特么奇怪的是这不是必然情况，偏偏到第三层递归时候append出现这种情况，注释掉下面的41 42即可看效果
+			解释：因为原数组的cap还够用就不会开辟新内存，https://stackoverflow.com/a/28143457，需要开辟新内存的时机也讲究
+			2,4,8,16,32如此类推，所以上面第三层出现这情况了
+		*/
+		fmt.Printf("1->%p,%p,%v,%v\n", cb, combine, cb, combine)
+		if gIndex == len(*groups)-1 { //如果是最后一个数组，则可以完成一个组合且收集到combines里
+			fmt.Printf("2->collect:%p,%v\n", cb, cb)
+			//cp := make([]int, len(cb))
+			//copy(cp, cb) //必须copy一份，否则之后的循环可能会影响已记录部分
+			//*combines = append(*combines, cp)
+			//下面是错误示范
+			*combines = append(*combines, cb)
+			continue
+		}
+		collectIntCombines(groups, gIndex+1, cb, combines)
+	}
+}
+
+func TestCollectIntCombines(t *testing.T) {
+	groups := [][]int{
+		{
+			1,
+		},
+		{
+			11,
+		},
+		{
+			21,
+		},
+		{
+			31, 32,
+		},
+	}
+
+	combines := [][]int{}
+	collectIntCombines(&groups, 0, []int{}, &combines)
+
+	t.Log(combines)
+	t.Log("一共", len(combines), "个结果")
 }
