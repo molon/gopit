@@ -387,3 +387,39 @@ func TestValuePointerMethod(t *testing.T) {
 	fmt.Println(s.TableName2())
 	fmt.Println(s.AccountID)
 }
+
+func TestTest(t *testing.T) {
+	ss := []ShopORM{
+		ShopORM{
+			AccountID: "1",
+		},
+		ShopORM{
+			AccountID: "2",
+		},
+	}
+	ss2 := []*ShopORM{}
+	// for _, s := range ss {
+	// 	ss2 = append(ss2, &s)
+	// }
+	var s ShopORM
+	for i := 0; i < len(ss); i++ {
+		s = ss[i]
+		ss2 = append(ss2, &s)
+	}
+
+	fmt.Println(ss2)
+}
+
+func TestAppend(t *testing.T) {
+	a := []int{1, 2}
+
+	b := append(a, 3)
+	c := append(a, 4)
+	fmt.Printf("a:%p->%v\nb:%p->%v\nc:%p->%v\n", a, a, b, b, c, c)
+
+	a = append(a, 3)
+	d := append(a, 4)
+	e := append(a, 5)
+	fmt.Printf("a:%p->%v\nd:%p->%v\ne:%p->%v\n", a, a, d, d, e, e)
+
+}
