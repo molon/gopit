@@ -330,11 +330,11 @@ func collectIntCombines(groups *[][]int, gIndex int, combine []int, combines *[]
 		fmt.Printf("1->%p,%p,%v,%v\n", cb, combine, cb, combine)
 		if gIndex == len(*groups)-1 { //如果是最后一个数组，则可以完成一个组合且收集到combines里
 			fmt.Printf("2->collect:%p,%v\n", cb, cb)
-			//cp := make([]int, len(cb))
-			//copy(cp, cb) //必须copy一份，否则之后的循环可能会影响已记录部分
-			//*combines = append(*combines, cp)
+			cp := make([]int, len(cb))
+			copy(cp, cb) //必须copy一份，否则之后的循环可能会影响已记录部分
+			*combines = append(*combines, cp)
 			//下面是错误示范
-			*combines = append(*combines, cb)
+			// *combines = append(*combines, cb)
 			continue
 		}
 		collectIntCombines(groups, gIndex+1, cb, combines)
